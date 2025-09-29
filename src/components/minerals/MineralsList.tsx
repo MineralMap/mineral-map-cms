@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Layout } from '@/components/layout/Layout'
-import { Button } from '@/components/ui/button'
+import { MainLayout } from '@/components/layout/MainLayout'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { MineralsTable } from './MineralsTable'
 import { mineralsService, tagsService } from '@/services/database'
 import type { Mineral, Tag } from '@/types/database'
-import { Plus, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function MineralsList() {
@@ -89,21 +87,9 @@ export function MineralsList() {
     }
   }
 
-  const headerAction = (
-    <Link to="/minerals/new">
-      <Button>
-        <Plus className="mr-2 h-4 w-4" />
-        Add Mineral
-      </Button>
-    </Link>
-  )
 
   return (
-    <Layout
-      title="Minerals"
-      description="Manage your mineral database entries"
-      action={headerAction}
-    >
+    <MainLayout>
       <div className="space-y-6">
         {/* Filters */}
         <div className="flex items-center gap-4">
@@ -152,6 +138,6 @@ export function MineralsList() {
           isLoading={isLoading}
         />
       </div>
-    </Layout>
+    </MainLayout>
   )
 }

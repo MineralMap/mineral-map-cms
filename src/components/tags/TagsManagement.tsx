@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Layout } from '@/components/layout/Layout'
+import { MainLayout } from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -116,7 +116,7 @@ export function TagsManagement() {
     }
   }
 
-  const headerAction = (
+  const addTagDialog = (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Button onClick={() => handleOpenDialog()}>
@@ -206,20 +206,16 @@ export function TagsManagement() {
 
   if (isLoading) {
     return (
-      <Layout title="Tags" description="Manage mineral categories" action={headerAction}>
+      <MainLayout>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      </Layout>
+      </MainLayout>
     )
   }
 
   return (
-    <Layout
-      title="Tags"
-      description="Manage mineral categories and classifications"
-      action={headerAction}
-    >
+    <MainLayout>
       <div className="space-y-6">
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -346,6 +342,6 @@ export function TagsManagement() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </MainLayout>
   )
 }
