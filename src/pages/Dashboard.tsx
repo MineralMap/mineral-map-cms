@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Users, Database, TrendingUp } from "lucide-react";
+import { SupabaseConnectionTest } from "@/components/SupabaseConnectionTest";
 
 const stats = [
   {
@@ -65,6 +66,11 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Supabase Connection Test */}
+      <div className="flex justify-center">
+        <SupabaseConnectionTest />
       </div>
 
       {/* Recent Activity */}

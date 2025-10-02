@@ -1,67 +1,17 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Edit, Trash2, Eye } from "lucide-react";
+import { mineralsService } from "@/services/database";
+import type { Mineral } from "@/types/database";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
-interface Mineral {
-  id: string;
-  name: string;
-  category: string;
-  color: string;
-  hardness: string;
-  status: "Published" | "Draft" | "Archived";
-  lastModified: string;
-}
-
-const sampleMinerals: Mineral[] = [
-  {
-    id: "1",
-    name: "Amethyst",
-    category: "Quartz",
-    color: "Purple",
-    hardness: "7",
-    status: "Published",
-    lastModified: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "Rose Quartz",
-    category: "Quartz",
-    color: "Pink",
-    hardness: "7",
-    status: "Published",
-    lastModified: "2024-01-14",
-  },
-  {
-    id: "3",
-    name: "Pyrite",
-    category: "Sulfide",
-    color: "Gold",
-    hardness: "6.5",
-    status: "Draft",
-    lastModified: "2024-01-13",
-  },
-  {
-    id: "4",
-    name: "Malachite",
-    category: "Carbonate",
-    color: "Green",
-    hardness: "3.5-4",
-    status: "Published",
-    lastModified: "2024-01-12",
-  },
-  {
-    id: "5",
-    name: "Hematite",
-    category: "Oxide",
-    color: "Metallic Gray",
-    hardness: "5-6",
-    status: "Archived",
-    lastModified: "2024-01-10",
-  },
-];
+// Build the status badge colors using existing classes in this page
+type DisplayStatus = "Published" | "Draft" | "Archived";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -78,12 +28,57 @@ const getStatusColor = (status: string) => {
 
 const Minerals = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [minerals] = useState<Mineral[]>(sampleMinerals);
+  const [minerals, setMinerals] = useState<Mineral[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const filteredMinerals = minerals.filter((mineral) =>
-    mineral.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    mineral.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await mineralsService.getAll();
+        setMinerals(data);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load minerals");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const filteredMinerals = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    return minerals
+      .filter((m) =>
+        (
+          m.title + " " + (m.description || "") + " " + m.slug + " " + m.tags.join(" ")
+        )
+          .toLowerCase()
+          .includes(q)
+      )
+      .map((m) => ({
+        id: m.id,
+        name: m.title,
+        category: m.tags[0] || "—",
+        color: "—", // Not in base schema; placeholder to preserve layout
+        hardness: "—", // Not in base schema; placeholder to preserve layout
+        status: (m.status.charAt(0).toUpperCase() + m.status.slice(1)) as DisplayStatus,
+        lastModified: format(new Date(m.updated_at), "yyyy-MM-dd"),
+      }));
+  }, [minerals, searchQuery]);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this mineral?")) return;
+    try {
+      await mineralsService.delete(id);
+      setMinerals((prev) => prev.filter((m) => m.id !== id));
+      toast.success("Mineral deleted");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to delete mineral");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -94,7 +89,7 @@ const Minerals = () => {
             Manage your mineral collection and data
           </p>
         </div>
-        <Button className="bg-primary hover:bg-primary-hover text-primary-foreground">
+        <Button onClick={() => navigate("/minerals/new")} className="bg-primary hover:bg-primary-hover text-primary-foreground">
           <Plus className="h-4 w-4 mr-2" />
           Add Mineral
         </Button>
@@ -121,6 +116,13 @@ const Minerals = () => {
       </Card>
 
       {/* Minerals Grid */}
+      {isLoading && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <div className="text-muted-foreground">Loading minerals...</div>
+          </CardContent>
+        </Card>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredMinerals.map((mineral) => (
           <Card key={mineral.id} className="border-border hover:shadow-lg transition-shadow">
@@ -151,11 +153,11 @@ const Minerals = () => {
                   Last modified: {mineral.lastModified}
                 </div>
                 <div className="flex gap-1 pt-2">
-                  <Button size="sm" variant="outline" className="flex-1 text-xs px-2">
+                  <Button size="sm" variant="outline" className="flex-1 text-xs px-2" onClick={() => navigate(`/minerals/${mineral.id}/preview`)}>
                     <Eye className="h-3 w-3" />
                     <span className="hidden sm:inline ml-1">View</span>
                   </Button>
-                  <Button size="sm" variant="outline" className="flex-1 text-xs px-2">
+                  <Button size="sm" variant="outline" className="flex-1 text-xs px-2" onClick={() => navigate(`/minerals/${mineral.id}/edit`)}>
                     <Edit className="h-3 w-3" />
                     <span className="hidden sm:inline ml-1">Edit</span>
                   </Button>
@@ -163,6 +165,7 @@ const Minerals = () => {
                     size="sm"
                     variant="outline"
                     className="px-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                    onClick={() => handleDelete(mineral.id)}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -173,7 +176,7 @@ const Minerals = () => {
         ))}
       </div>
 
-      {filteredMinerals.length === 0 && (
+      {!isLoading && filteredMinerals.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <div className="text-muted-foreground">
