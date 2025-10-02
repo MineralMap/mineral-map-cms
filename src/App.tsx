@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Minerals from "./pages/Minerals";
 import Categories from "./pages/Categories";
 import NotFound from "./pages/NotFound";
+import { MineralForm } from "@/components/minerals/MineralForm";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,16 @@ const App = () => (
           <Route path="/minerals" element={
             <MainLayout>
               <Minerals />
+            </MainLayout>
+          } />
+          <Route path="/minerals/new" element={
+            <MainLayout>
+              <MineralForm />
+            </MainLayout>
+          } />
+          <Route path="/minerals/:id/edit" element={
+            <MainLayout>
+              <MineralForm />
             </MainLayout>
           } />
           <Route path="/categories" element={
