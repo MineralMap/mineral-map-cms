@@ -6,9 +6,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Minerals from "./pages/Minerals";
+import MineralPreview from "./pages/MineralPreview";
 import Categories from "./pages/Categories";
 import NotFound from "./pages/NotFound";
 import { MineralForm } from "@/components/minerals/MineralForm";
+import { TagForm } from "@/components/tags/TagForm";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,11 @@ const App = () => (
               <MineralForm />
             </MainLayout>
           } />
+          <Route path="/minerals/:id/preview" element={
+            <MainLayout>
+              <MineralPreview />
+            </MainLayout>
+          } />
           <Route path="/minerals/:id/edit" element={
             <MainLayout>
               <MineralForm />
@@ -42,6 +49,16 @@ const App = () => (
           <Route path="/categories" element={
             <MainLayout>
               <Categories />
+            </MainLayout>
+          } />
+          <Route path="/categories/new" element={
+            <MainLayout>
+              <TagForm />
+            </MainLayout>
+          } />
+          <Route path="/categories/:id/edit" element={
+            <MainLayout>
+              <TagForm />
             </MainLayout>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

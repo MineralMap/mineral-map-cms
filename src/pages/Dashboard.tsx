@@ -1,46 +1,71 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Users, Database, TrendingUp } from "lucide-react";
+import { BarChart3, Database, TrendingUp, FolderOpen } from "lucide-react";
 import { SupabaseConnectionTest } from "@/components/SupabaseConnectionTest";
-
-const stats = [
-  {
-    title: "Total Minerals",
-    value: "156",
-    description: "+12% from last month",
-    icon: Database,
-    trend: "up",
-  },
-  {
-    title: "Categories",
-    value: "24",
-    description: "+3 new categories",
-    icon: BarChart3,
-    trend: "up",
-  },
-  {
-    title: "Published Items",
-    value: "142",
-    description: "91% of total minerals",
-    icon: TrendingUp,
-    trend: "stable",
-  },
-  {
-    title: "Contributors",
-    value: "8",
-    description: "Active this month",
-    icon: Users,
-    trend: "up",
-  },
-];
-
-const recentActivity = [
-  { action: "Added", item: "Quartz Crystal", time: "2 hours ago" },
-  { action: "Updated", item: "Amethyst Category", time: "4 hours ago" },
-  { action: "Published", item: "Rose Quartz", time: "6 hours ago" },
-  { action: "Created", item: "Precious Stones Category", time: "1 day ago" },
-];
+import { mineralsService, tagsService } from "@/services/database";
+import type { Mineral } from "@/types/database";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const [minerals, setMinerals] = useState<Mineral[]>([]);
+  const [tagCount, setTagCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const [mineralsData, tagsData] = await Promise.all([
+        mineralsService.getAll(),
+        tagsService.getAll()
+      ]);
+      setMinerals(mineralsData);
+      setTagCount(tagsData.length);
+    } catch (error) {
+      console.error('Error loading dashboard stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const publishedCount = minerals.filter(m => m.status === 'published').length;
+  const publishedPercentage = minerals.length > 0
+    ? Math.round((publishedCount / minerals.length) * 100)
+    : 0;
+
+  const stats = [
+    {
+      title: "Total Minerals",
+      value: isLoading ? "..." : minerals.length.toString(),
+      description: `${publishedCount} published`,
+      icon: Database,
+      trend: "up",
+    },
+    {
+      title: "Categories",
+      value: isLoading ? "..." : tagCount.toString(),
+      description: "Active tags",
+      icon: BarChart3,
+      trend: "up",
+    },
+    {
+      title: "Published Items",
+      value: isLoading ? "..." : publishedCount.toString(),
+      description: `${publishedPercentage}% of total minerals`,
+      icon: TrendingUp,
+      trend: "stable",
+    },
+    {
+      title: "Draft Items",
+      value: isLoading ? "..." : minerals.filter(m => m.status === 'draft').length.toString(),
+      description: "Unpublished minerals",
+      icon: FolderOpen,
+      trend: "up",
+    },
+  ];
   return (
     <div className="space-y-8">
       <div>
@@ -77,25 +102,33 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest changes in your CMS</CardDescription>
+            <CardTitle>Recent Minerals</CardTitle>
+            <CardDescription>Latest mineral entries</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center justify-between py-2">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    <div>
-                      <span className="text-sm font-medium">{activity.action}</span>
-                      <span className="text-sm text-muted-foreground ml-1">
-                        {activity.item}
-                      </span>
+              {isLoading ? (
+                <div className="text-sm text-muted-foreground">Loading...</div>
+              ) : minerals.slice(0, 5).length > 0 ? (
+                minerals.slice(0, 5).map((mineral) => (
+                  <div key={mineral.id} className="flex items-center justify-between py-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                      <div>
+                        <span className="text-sm font-medium">{mineral.title}</span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          ({mineral.status})
+                        </span>
+                      </div>
                     </div>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(mineral.updated_at).toLocaleDateString()}
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{activity.time}</span>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="text-sm text-muted-foreground">No minerals yet</div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -107,17 +140,26 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <button className="w-full text-left p-3 rounded-lg border border-border hover:bg-secondary transition-colors">
+              <button
+                onClick={() => navigate('/minerals/new')}
+                className="w-full text-left p-3 rounded-lg border border-border hover:bg-secondary transition-colors"
+              >
                 <div className="font-medium text-sm">Add New Mineral</div>
                 <div className="text-xs text-muted-foreground">Create a new mineral entry</div>
               </button>
-              <button className="w-full text-left p-3 rounded-lg border border-border hover:bg-secondary transition-colors">
+              <button
+                onClick={() => navigate('/categories/new')}
+                className="w-full text-left p-3 rounded-lg border border-border hover:bg-secondary transition-colors"
+              >
                 <div className="font-medium text-sm">Create Category</div>
                 <div className="text-xs text-muted-foreground">Organize your content</div>
               </button>
-              <button className="w-full text-left p-3 rounded-lg border border-border hover:bg-secondary transition-colors">
-                <div className="font-medium text-sm">Bulk Import</div>
-                <div className="text-xs text-muted-foreground">Import multiple items</div>
+              <button
+                onClick={() => navigate('/minerals')}
+                className="w-full text-left p-3 rounded-lg border border-border hover:bg-secondary transition-colors"
+              >
+                <div className="font-medium text-sm">View All Minerals</div>
+                <div className="text-xs text-muted-foreground">Browse your collection</div>
               </button>
             </div>
           </CardContent>
