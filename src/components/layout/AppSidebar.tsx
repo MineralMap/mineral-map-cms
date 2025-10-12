@@ -1,8 +1,10 @@
-import { LayoutDashboard, Gem, FolderOpen } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { LayoutDashboard, Gem, FolderOpen, LogOut, User } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -11,6 +13,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const navigationItems = [
   {
@@ -33,7 +37,26 @@ const navigationItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
+      navigate("/login");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+      });
+    }
+  };
 
   return (
     <Sidebar className={collapsed ? "w-16" : "w-64"} collapsible="icon">
@@ -79,6 +102,27 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="p-4 border-t">
+        {!collapsed && user && (
+          <div className="mb-3 px-2">
+            <div className="flex items-center gap-2 text-sm">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground truncate">
+                {user.email}
+              </span>
+            </div>
+          </div>
+        )}
+        <Button
+          variant="ghost"
+          className="w-full justify-start"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-5 w-5 flex-shrink-0" />
+          {!collapsed && <span className="ml-3">Sign Out</span>}
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }
