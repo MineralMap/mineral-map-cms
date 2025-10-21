@@ -3,18 +3,18 @@ import { MainLayout } from '@/components/layout/MainLayout'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { MineralsTable } from './MineralsTable'
-import { mineralsService, tagsService } from '@/services/database'
-import type { Mineral, Tag } from '@/types/database'
+import { mineralsService, categoriesService } from '@/services/database'
+import type { Mineral, Category } from '@/types/database'
 import { Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function MineralsList() {
   const [minerals, setMinerals] = useState<Mineral[]>([])
-  const [tags, setTags] = useState<Tag[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [tagFilter, setTagFilter] = useState<string>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
 
   useEffect(() => {
     loadData()
@@ -22,16 +22,16 @@ export function MineralsList() {
 
   useEffect(() => {
     filterMinerals()
-  }, [search, statusFilter, tagFilter])
+  }, [search, statusFilter, categoryFilter])
 
   const loadData = async () => {
     try {
-      const [mineralsData, tagsData] = await Promise.all([
+      const [mineralsData, categoriesData] = await Promise.all([
         mineralsService.getAll(),
-        tagsService.getAll()
+        categoriesService.getAll()
       ])
       setMinerals(mineralsData)
-      setTags(tagsData)
+      setCategories(categoriesData)
     } catch (error) {
       console.error('Error loading data:', error)
       toast.error('Failed to load data')
@@ -48,8 +48,8 @@ export function MineralsList() {
         filters.status = statusFilter
       }
 
-      if (tagFilter !== 'all') {
-        filters.tags = [tagFilter]
+      if (categoryFilter !== 'all') {
+        filters.category = categoryFilter
       }
 
       if (search) {
@@ -115,15 +115,15 @@ export function MineralsList() {
             </SelectContent>
           </Select>
 
-          <Select value={tagFilter} onValueChange={setTagFilter}>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="All tags" />
+              <SelectValue placeholder="All categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All tags</SelectItem>
-              {tags.map((tag) => (
-                <SelectItem key={tag.id} value={tag.name}>
-                  {tag.name}
+              <SelectItem value="all">All categories</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.name}>
+                  {category.name}
                 </SelectItem>
               ))}
             </SelectContent>

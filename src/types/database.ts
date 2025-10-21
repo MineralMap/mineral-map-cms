@@ -9,10 +9,10 @@ export type MineralStatus = 'draft' | 'published' | 'archived'
 // ===========================================
 
 /**
- * Tags table - mineral categories and classifications
- * Matches Supabase schema from 01-initial-setup.sql
+ * Categories table - mineral categories and classifications
+ * Matches Supabase schema (renamed from tags table)
  */
-export interface Tag {
+export interface Category {
   id: string // UUID PRIMARY KEY
   name: string // TEXT UNIQUE NOT NULL
   color: string // TEXT DEFAULT '#6B7280'
@@ -31,7 +31,7 @@ export interface Mineral {
   slug: string // TEXT UNIQUE NOT NULL (auto-generated from title)
   description?: string // TEXT (rich text from TinyMCE)
   video_url?: string // TEXT (URL for embedded videos)
-  tags: string[] // TEXT[] DEFAULT '{}' (array of tag names)
+  category: string | null // TEXT (single category name)
   images: MineralImage[] // JSONB DEFAULT '[]' (array of image metadata)
   status: MineralStatus // mineral_status DEFAULT 'draft'
   meta_title?: string // TEXT (SEO title)
@@ -71,7 +71,7 @@ export interface CreateMineralData {
   slug?: string // Optional, will be auto-generated from title
   description?: string
   video_url?: string
-  tags: string[] // Array of tag names (not tag IDs)
+  category: string | null // Single category name (not category ID)
   images?: MineralImage[]
   status: MineralStatus
   meta_title?: string
@@ -87,21 +87,21 @@ export interface UpdateMineralData extends Partial<CreateMineralData> {
 }
 
 /**
- * Data required to create a new tag
+ * Data required to create a new category
  * Note: id, created_at, updated_at are auto-generated
  */
-export interface CreateTagData {
+export interface CreateCategoryData {
   name: string
   color: string // Hex color code, defaults to '#6B7280' in database
   description?: string
 }
 
 /**
- * Data for updating an existing tag
+ * Data for updating an existing category
  * All fields except id are optional
  */
-export interface UpdateTagData extends Partial<CreateTagData> {
-  id: string // Required to identify which tag to update
+export interface UpdateCategoryData extends Partial<CreateCategoryData> {
+  id: string // Required to identify which category to update
 }
 
 // ===========================================
@@ -109,20 +109,20 @@ export interface UpdateTagData extends Partial<CreateTagData> {
 // ===========================================
 
 /**
- * Tag with color and name info for UI display
- * Used in published_minerals view and tag lookups
+ * Category with color and name info for UI display
+ * Used in published_minerals view and category lookups
  */
-export interface TagDetail {
+export interface CategoryDetail {
   name: string
   color: string
 }
 
 /**
  * Enhanced mineral type matching the published_minerals view
- * Includes resolved tag details instead of just tag names
+ * Includes resolved category details instead of just category name
  */
-export interface PublishedMineral extends Omit<Mineral, 'tags'> {
-  tag_details: TagDetail[] | null
+export interface PublishedMineral extends Omit<Mineral, 'category'> {
+  category_detail: CategoryDetail | null
 }
 
 /**
@@ -147,3 +147,47 @@ export interface SearchMineralsParams {
  * Storage bucket identifiers matching Supabase setup
  */
 export type StorageBucket = 'mineral-images' | 'mineral-videos'
+
+/**
+ * Staff table - museum staff members
+ */
+export interface Staff {
+  id: string
+  title: string
+  description?: string
+  image?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateStaffData {
+  title: string
+  description?: string
+  image?: string
+}
+
+export interface UpdateStaffData extends Partial<CreateStaffData> {
+  id: string
+}
+
+/**
+ * FAQ table - frequently asked questions
+ */
+export interface FAQ {
+  id: string
+  question: string
+  answer: string
+  display_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateFAQData {
+  question: string
+  answer: string
+  display_order?: number
+}
+
+export interface UpdateFAQData extends Partial<CreateFAQData> {
+  id: string
+}

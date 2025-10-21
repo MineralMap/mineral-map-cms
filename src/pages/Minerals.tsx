@@ -52,7 +52,7 @@ const Minerals = () => {
     return minerals
       .filter((m) =>
         (
-          m.title + " " + (m.description || "") + " " + m.slug + " " + m.tags.join(" ")
+          m.title + " " + (m.description || "") + " " + m.slug + " " + (m.category || "")
         )
           .toLowerCase()
           .includes(q)
@@ -60,7 +60,7 @@ const Minerals = () => {
       .map((m) => ({
         id: m.id,
         name: m.title,
-        category: m.tags[0] || "—",
+        category: m.category || "—",
         color: "—", // Not in base schema; placeholder to preserve layout
         hardness: "—", // Not in base schema; placeholder to preserve layout
         status: (m.status.charAt(0).toUpperCase() + m.status.slice(1)) as DisplayStatus,

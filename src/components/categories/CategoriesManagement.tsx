@@ -11,8 +11,8 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { tagsService } from '@/services/database'
-import type { Tag } from '@/types/database'
+import { categoriesService } from '@/services/database'
+import type { Category } from '@/types/database'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -22,7 +22,7 @@ const tagSchema = z.object({
   description: z.string().optional(),
 })
 
-type TagFormData = z.infer<typeof tagSchema>
+type CategoryFormData = z.infer<typeof tagSchema>
 
 const predefinedColors = [
   '#3B82F6', '#EF4444', '#10B981', '#F59E0B',
@@ -30,13 +30,13 @@ const predefinedColors = [
   '#EC4899', '#F97316', '#14B8A6', '#8B5A3C'
 ]
 
-export function TagsManagement() {
-  const [tags, setTags] = useState<Tag[]>([])
+export function CategoriesManagement() {
+  const [categories, setTags] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingTag, setEditingTag] = useState<Tag | null>(null)
+  const [editingCategory, setEditingTag] = useState<Category | null>(null)
 
-  const form = useForm<TagFormData>({
+  const form = useForm<CategoryFormData>({
     resolver: zodResolver(tagSchema),
     defaultValues: {
       name: '',
@@ -51,17 +51,17 @@ export function TagsManagement() {
 
   const loadTags = async () => {
     try {
-      const data = await tagsService.getAll()
+      const data = await categoriesService.getAll()
       setTags(data)
     } catch (error) {
-      console.error('Error loading tags:', error)
-      toast.error('Failed to load tags')
+      console.error('Error loading categories:', error)
+      toast.error('Failed to load categories')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleOpenDialog = (tag?: Tag) => {
+  const handleOpenDialog = (tag?: Category) => {
     if (tag) {
       setEditingTag(tag)
       form.reset({
@@ -86,14 +86,14 @@ export function TagsManagement() {
     form.reset()
   }
 
-  const onSubmit = async (data: TagFormData) => {
+  const onSubmit = async (data: CategoryFormData) => {
     try {
-      if (editingTag) {
-        await tagsService.update({ id: editingTag.id, ...data })
-        toast.success('Tag updated successfully')
+      if (editingCategory) {
+        await categoriesService.update({ id: editingCategory.id, ...data })
+        toast.success('Category updated successfully')
       } else {
-        await tagsService.create(data)
-        toast.success('Tag created successfully')
+        await categoriesService.create(data)
+        toast.success('Category created successfully')
       }
       await loadTags()
       handleCloseDialog()
@@ -107,9 +107,9 @@ export function TagsManagement() {
     if (!confirm('Are you sure you want to delete this tag?')) return
 
     try {
-      await tagsService.delete(id)
+      await categoriesService.delete(id)
       setTags(prev => prev.filter(t => t.id !== id))
-      toast.success('Tag deleted successfully')
+      toast.success('Category deleted successfully')
     } catch (error) {
       console.error('Error deleting tag:', error)
       toast.error('Failed to delete tag')
@@ -127,7 +127,7 @@ export function TagsManagement() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {editingTag ? 'Edit Tag' : 'Create New Tag'}
+            {editingCategory ? 'Edit Tag' : 'Create New Tag'}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -195,7 +195,7 @@ export function TagsManagement() {
                 Cancel
               </Button>
               <Button type="submit">
-                {editingTag ? 'Update' : 'Create'}
+                {editingCategory ? 'Update' : 'Create'}
               </Button>
             </div>
           </form>
@@ -224,7 +224,7 @@ export function TagsManagement() {
               <CardTitle className="text-sm font-medium">Total Tags</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{tags.length}</div>
+              <div className="text-2xl font-bold">{categories.length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -233,7 +233,7 @@ export function TagsManagement() {
             </CardHeader>
             <CardContent>
               <div className="text-lg font-semibold">
-                {tags.length > 0 ? tags[0].name : 'N/A'}
+                {categories.length > 0 ? categories[0].name : 'N/A'}
               </div>
             </CardContent>
           </Card>
@@ -243,7 +243,7 @@ export function TagsManagement() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-1">
-                {tags.slice(0, 3).map((tag) => (
+                {categories.slice(0, 3).map((tag) => (
                   <Badge
                     key={tag.id}
                     variant="secondary"
@@ -253,9 +253,9 @@ export function TagsManagement() {
                     {tag.name}
                   </Badge>
                 ))}
-                {tags.length > 3 && (
+                {categories.length > 3 && (
                   <Badge variant="outline" className="text-xs">
-                    +{tags.length - 3}
+                    +{categories.length - 3}
                   </Badge>
                 )}
               </div>
@@ -269,9 +269,9 @@ export function TagsManagement() {
             <CardTitle>All Tags</CardTitle>
           </CardHeader>
           <CardContent>
-            {tags.length === 0 ? (
+            {categories.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-lg font-medium">No tags found</p>
+                <p className="text-lg font-medium">No categories found</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Create your first tag to start organizing minerals.
                 </p>
@@ -288,7 +288,7 @@ export function TagsManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tags.map((tag) => (
+                  {categories.map((tag) => (
                     <TableRow key={tag.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -342,6 +342,7 @@ export function TagsManagement() {
           </CardContent>
         </Card>
       </div>
+      {addTagDialog}
     </MainLayout>
   )
 }

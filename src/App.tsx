@@ -10,10 +10,14 @@ import Dashboard from "./pages/Dashboard";
 import Minerals from "./pages/Minerals";
 import MineralPreview from "./pages/MineralPreview";
 import Categories from "./pages/Categories";
+import Staff from "./pages/Staff";
+import FAQ from "./pages/FAQ";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { MineralForm } from "@/components/minerals/MineralForm";
-import { TagForm } from "@/components/tags/TagForm";
+import { CategoryForm } from "@/components/categories/CategoryForm";
+import { StaffForm } from "@/components/staff/StaffForm";
+import { FAQForm } from "@/components/faq/FAQForm";
 
 const queryClient = new QueryClient();
 
@@ -74,14 +78,56 @@ const App = () => (
             <Route path="/categories/new" element={
               <ProtectedRoute>
                 <MainLayout>
-                  <TagForm />
+                  <CategoryForm />
                 </MainLayout>
               </ProtectedRoute>
             } />
             <Route path="/categories/:id/edit" element={
               <ProtectedRoute>
                 <MainLayout>
-                  <TagForm />
+                  <CategoryForm />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/staff" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Staff />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/staff/new" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <StaffForm />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/staff/:id/edit" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <StaffForm />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/faq" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <FAQ />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/faq/new" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <FAQForm />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/faq/:id/edit" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <FAQForm />
                 </MainLayout>
               </ProtectedRoute>
             } />

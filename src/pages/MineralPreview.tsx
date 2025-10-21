@@ -195,23 +195,19 @@ const MineralPreview = () => {
             </CardContent>
           </Card>
 
-          {/* Tags */}
-          {mineral.tags && mineral.tags.length > 0 && (
+          {/* Category */}
+          {mineral.category && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TagIcon className="h-4 w-4" />
-                  Tags
+                  Category
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {mineral.tags.map((tag) => (
-                    <Badge key={tag} variant="outline">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+                <Badge variant="outline">
+                  {mineral.category}
+                </Badge>
               </CardContent>
             </Card>
           )}

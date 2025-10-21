@@ -134,7 +134,7 @@ export function MineralsTable({
               </TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Tags</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Updated</TableHead>
               <TableHead className="w-12"></TableHead>
             </TableRow>
@@ -170,18 +170,13 @@ export function MineralsTable({
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {mineral.tags.slice(0, 3).map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {mineral.tags.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{mineral.tags.length - 3}
-                      </Badge>
-                    )}
-                  </div>
+                  {mineral.category ? (
+                    <Badge variant="outline" className="text-xs">
+                      {mineral.category}
+                    </Badge>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Uncategorized</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {format(new Date(mineral.updated_at), 'MMM d, yyyy')}

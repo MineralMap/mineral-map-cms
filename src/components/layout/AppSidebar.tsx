@@ -1,4 +1,4 @@
-import { LayoutDashboard, Gem, FolderOpen, LogOut, User } from "lucide-react";
+import { LayoutDashboard, Gem, FolderOpen, Users, HelpCircle, LogOut, User } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -31,6 +31,16 @@ const navigationItems = [
     title: "Categories",
     url: "/categories",
     icon: FolderOpen,
+  },
+  {
+    title: "Staff",
+    url: "/staff",
+    icon: Users,
+  },
+  {
+    title: "FAQ",
+    url: "/faq",
+    icon: HelpCircle,
   },
 ];
 

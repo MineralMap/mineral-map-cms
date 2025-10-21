@@ -4,17 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Edit, Trash2, FolderOpen } from "lucide-react";
-import { tagsService, mineralsService } from "@/services/database";
-import type { Tag } from "@/types/database";
+import { categoriesService, mineralsService } from "@/services/database";
+import type { Category } from "@/types/database";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
 const Categories = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [tagUsageCounts, setTagUsageCounts] = useState<Record<string, number>>({});
+  const [categoryUsageCounts, setCategoryUsageCounts] = useState<Record<string, number>>({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,23 +23,23 @@ const Categories = () => {
 
   const loadData = async () => {
     try {
-      const [tagsData, mineralsData] = await Promise.all([
-        tagsService.getAll(),
+      const [categoriesData, mineralsData] = await Promise.all([
+        categoriesService.getAll(),
         mineralsService.getAll()
       ]);
 
-      setTags(tagsData);
+      setCategories(categoriesData);
 
-      // Calculate tag usage counts
+      // Calculate category usage counts
       const counts: Record<string, number> = {};
       mineralsData.forEach(mineral => {
-        mineral.tags.forEach(tagName => {
-          counts[tagName] = (counts[tagName] || 0) + 1;
-        });
+        if (mineral.category) {
+          counts[mineral.category] = (counts[mineral.category] || 0) + 1;
+        }
       });
-      setTagUsageCounts(counts);
+      setCategoryUsageCounts(counts);
     } catch (error) {
-      console.error('Error loading tags:', error);
+      console.error('Error loading categories:', error);
       toast.error('Failed to load categories');
     } finally {
       setIsLoading(false);
@@ -47,20 +47,20 @@ const Categories = () => {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete the "${name}" tag? This won't affect minerals using this tag.`)) return;
+    if (!confirm(`Are you sure you want to delete the "${name}" category? This won't affect minerals using this category.`)) return;
     try {
-      await tagsService.delete(id);
-      setTags(prev => prev.filter(t => t.id !== id));
-      toast.success('Tag deleted');
+      await categoriesService.delete(id);
+      setCategories(prev => prev.filter(t => t.id !== id));
+      toast.success('Category deleted');
     } catch (error) {
-      console.error('Error deleting tag:', error);
-      toast.error('Failed to delete tag');
+      console.error('Error deleting category:', error);
+      toast.error('Failed to delete category');
     }
   };
 
-  const filteredCategories = tags.filter((tag) =>
-    tag.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (tag.description?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+  const filteredCategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (category.description?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -102,21 +102,21 @@ const Categories = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredCategories.map((tag) => {
-            const itemCount = tagUsageCounts[tag.name] || 0;
+          {filteredCategories.map((category) => {
+            const itemCount = categoryUsageCounts[category.name] || 0;
             return (
-              <Card key={tag.id} className="border-border hover:shadow-lg transition-shadow">
+              <Card key={category.id} className="border-border hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div
                         className="w-12 h-12 rounded-lg flex items-center justify-center"
-                        style={{ backgroundColor: tag.color + '20' }}
+                        style={{ backgroundColor: category.color + '20' }}
                       >
-                        <FolderOpen className="h-6 w-6" style={{ color: tag.color }} />
+                        <FolderOpen className="h-6 w-6" style={{ color: category.color }} />
                       </div>
                       <div>
-                        <CardTitle className="text-lg">{tag.name}</CardTitle>
+                        <CardTitle className="text-lg">{category.name}</CardTitle>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="outline" className="text-xs">
                             {itemCount} {itemCount === 1 ? 'item' : 'items'}
@@ -129,17 +129,17 @@ const Categories = () => {
                 <CardContent>
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {tag.description || 'No description provided'}
+                      {category.description || 'No description provided'}
                     </p>
                     <div className="text-xs text-muted-foreground">
-                      Created: {format(new Date(tag.created_at), 'yyyy-MM-dd')}
+                      Created: {format(new Date(category.created_at), 'yyyy-MM-dd')}
                     </div>
                     <div className="flex gap-2 pt-2">
                       <Button
                         size="sm"
                         variant="outline"
                         className="flex-1"
-                        onClick={() => navigate(`/categories/${tag.id}/edit`)}
+                        onClick={() => navigate(`/categories/${category.id}/edit`)}
                       >
                         <Edit className="h-3 w-3 mr-1" />
                         Edit
@@ -148,7 +148,7 @@ const Categories = () => {
                         size="sm"
                         variant="outline"
                         className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                        onClick={() => handleDelete(tag.id, tag.name)}
+                        onClick={() => handleDelete(category.id, category.name)}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -172,7 +172,7 @@ const Categories = () => {
       )}
 
       {/* Quick Stats */}
-      {!isLoading && tags.length > 0 && (
+      {!isLoading && categories.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Category Overview</CardTitle>
@@ -181,27 +181,27 @@ const Categories = () => {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-muted rounded-lg">
-                <div className="text-2xl font-bold text-foreground">{tags.length}</div>
+                <div className="text-2xl font-bold text-foreground">{categories.length}</div>
                 <div className="text-sm text-muted-foreground">Total Categories</div>
               </div>
               <div className="text-center p-4 bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-foreground">
-                  {Object.values(tagUsageCounts).reduce((sum, count) => sum + count, 0)}
+                  {Object.values(categoryUsageCounts).reduce((sum, count) => sum + count, 0)}
                 </div>
                 <div className="text-sm text-muted-foreground">Total Items</div>
               </div>
               <div className="text-center p-4 bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-foreground">
-                  {tags.length > 0
-                    ? Math.round(Object.values(tagUsageCounts).reduce((sum, count) => sum + count, 0) / tags.length)
+                  {categories.length > 0
+                    ? Math.round(Object.values(categoryUsageCounts).reduce((sum, count) => sum + count, 0) / categories.length)
                     : 0}
                 </div>
                 <div className="text-sm text-muted-foreground">Avg per Category</div>
               </div>
               <div className="text-center p-4 bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-foreground">
-                  {Object.values(tagUsageCounts).length > 0
-                    ? Math.max(...Object.values(tagUsageCounts))
+                  {Object.values(categoryUsageCounts).length > 0
+                    ? Math.max(...Object.values(categoryUsageCounts))
                     : 0}
                 </div>
                 <div className="text-sm text-muted-foreground">Largest Category</div>

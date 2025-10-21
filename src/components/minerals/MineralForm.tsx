@@ -8,14 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { FileUpload, type UploadedFile } from '@/components/ui/file-upload'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { mineralsService, tagsService, storageService, utilityService } from '@/services/database'
-import type { Mineral, Tag, MineralImage } from '@/types/database'
-import { Save, ArrowLeft, X } from 'lucide-react'
+import { mineralsService, categoriesService, storageService, utilityService } from '@/services/database'
+import type { Mineral, Category, MineralImage } from '@/types/database'
+import { Save, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 
 const mineralSchema = z.object({
@@ -36,8 +35,8 @@ export function MineralForm() {
   const isEditing = id !== 'new' && !!id
 
   const [mineral, setMineral] = useState<Mineral | null>(null)
-  const [tags, setTags] = useState<Tag[]>([])
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [images, setImages] = useState<MineralImage[]>([])
   const [isLoading, setIsLoading] = useState(isEditing)
   const [isSaving, setIsSaving] = useState(false)
@@ -70,13 +69,13 @@ export function MineralForm() {
 
   const loadData = async () => {
     try {
-      const tagsData = await tagsService.getAll()
-      setTags(tagsData)
+      const categoriesData = await categoriesService.getAll()
+      setCategories(categoriesData)
 
       if (isEditing && id) {
         const mineralData = await mineralsService.getById(id)
         setMineral(mineralData)
-        setSelectedTags(mineralData.tags)
+        setSelectedCategory(mineralData.category || null)
         setImages(mineralData.images)
 
         // Set form values
@@ -126,14 +125,8 @@ export function MineralForm() {
     toast.success('Image removed')
   }
 
-  const handleTagSelect = (tagName: string) => {
-    if (!selectedTags.includes(tagName)) {
-      setSelectedTags(prev => [...prev, tagName])
-    }
-  }
-
-  const handleTagRemove = (tagName: string) => {
-    setSelectedTags(prev => prev.filter(t => t !== tagName))
+  const handleCategorySelect = (categoryName: string) => {
+    setSelectedCategory(categoryName)
   }
 
   const onSubmit = async (data: MineralFormData) => {
@@ -145,7 +138,7 @@ export function MineralForm() {
       const mineralData = {
         ...data,
         slug: finalSlug,
-        tags: selectedTags,
+        category: selectedCategory,
         images,
       }
 
@@ -385,51 +378,27 @@ export function MineralForm() {
                 </CardContent>
               </Card>
 
-              {/* Tags */}
+              {/* Category */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Tags</CardTitle>
+                  <CardTitle>Category</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label>Available Tags</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {tags.map((tag) => (
-                        <Badge
-                          key={tag.id}
-                          variant={selectedTags.includes(tag.name) ? "default" : "outline"}
-                          className="cursor-pointer"
-                          onClick={() => handleTagSelect(tag.name)}
-                          style={{ backgroundColor: selectedTags.includes(tag.name) ? tag.color : undefined }}
-                        >
-                          {tag.name}
-                        </Badge>
-                      ))}
-                    </div>
+                    <Label>Select Category</Label>
+                    <Select value={selectedCategory || ''} onValueChange={handleCategorySelect}>
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Select a category..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.name}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-
-                  {selectedTags.length > 0 && (
-                    <div>
-                      <Label>Selected Tags</Label>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {selectedTags.map((tagName) => {
-                          const tag = tags.find(t => t.name === tagName)
-                          return (
-                            <Badge
-                              key={tagName}
-                              variant="default"
-                              style={{ backgroundColor: tag?.color }}
-                              className="cursor-pointer"
-                              onClick={() => handleTagRemove(tagName)}
-                            >
-                              {tagName}
-                              <X className="ml-1 h-3 w-3" />
-                            </Badge>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             </div>

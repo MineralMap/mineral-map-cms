@@ -9,8 +9,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { tagsService } from '@/services/database'
-import type { Tag } from '@/types/database'
+import { categoriesService } from '@/services/database'
+import type { Category } from '@/types/database'
 import { Save, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -20,23 +20,23 @@ const tagSchema = z.object({
   description: z.string().optional(),
 })
 
-type TagFormData = z.infer<typeof tagSchema>
+type CategoryFormData = z.infer<typeof tagSchema>
 
 const DEFAULT_COLORS = [
   '#6B7280', '#EF4444', '#F59E0B', '#10B981', '#3B82F6',
   '#6366F1', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'
 ]
 
-export function TagForm() {
+export function CategoryForm() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const isEditing = id !== 'new' && !!id
 
-  const [tag, setTag] = useState<Tag | null>(null)
+  const [tag, setTag] = useState<Category | null>(null)
   const [isLoading, setIsLoading] = useState(isEditing)
   const [isSaving, setIsSaving] = useState(false)
 
-  const form = useForm<TagFormData>({
+  const form = useForm<CategoryFormData>({
     resolver: zodResolver(tagSchema),
     defaultValues: {
       name: '',
@@ -47,13 +47,13 @@ export function TagForm() {
 
   useEffect(() => {
     if (isEditing && id) {
-      loadTag()
+      loadCategory()
     }
   }, [id])
 
-  const loadTag = async () => {
+  const loadCategory = async () => {
     try {
-      const tagData = await tagsService.getById(id!)
+      const tagData = await categoriesService.getById(id!)
       setTag(tagData)
       form.reset({
         name: tagData.name,
@@ -68,15 +68,15 @@ export function TagForm() {
     }
   }
 
-  const onSubmit = async (data: TagFormData) => {
+  const onSubmit = async (data: CategoryFormData) => {
     setIsSaving(true)
     try {
       if (isEditing && id) {
-        await tagsService.update({ id, ...data })
-        toast.success('Tag updated successfully')
+        await categoriesService.update({ id, ...data })
+        toast.success('Category updated successfully')
       } else {
-        await tagsService.create(data)
-        toast.success('Tag created successfully')
+        await categoriesService.create(data)
+        toast.success('Category created successfully')
       }
       navigate('/categories')
     } catch (error) {
@@ -135,7 +135,7 @@ export function TagForm() {
           <div className="max-w-2xl">
             <Card className="card-modern">
               <CardHeader>
-                <CardTitle className="text-xl">Tag Information</CardTitle>
+                <CardTitle className="text-xl">Category Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <FormField

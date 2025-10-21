@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { Mineral, Tag, CreateMineralData, UpdateMineralData, CreateTagData, UpdateTagData } from '@/types/database'
+import type { Mineral, Category, CreateMineralData, UpdateMineralData, CreateCategoryData, UpdateCategoryData, Staff, CreateStaffData, UpdateStaffData, FAQ, CreateFAQData, UpdateFAQData } from '@/types/database'
 
 // ===========================================
 // MINERALS
@@ -7,7 +7,7 @@ import type { Mineral, Tag, CreateMineralData, UpdateMineralData, CreateTagData,
 
 export const mineralsService = {
   // Get all minerals with optional filtering
-  async getAll(filters?: { status?: string; tags?: string[]; search?: string }) {
+  async getAll(filters?: { status?: string; category?: string; search?: string }) {
     let query = supabase
       .from('minerals')
       .select('*')
@@ -17,15 +17,15 @@ export const mineralsService = {
       query = query.eq('status', filters.status)
     }
 
-    if (filters?.tags && filters.tags.length > 0) {
-      query = query.overlaps('tags', filters.tags)
+    if (filters?.category) {
+      query = query.eq('category', filters.category)
     }
 
     if (filters?.search) {
       query = query.or(`title.ilike.%${filters.search}%, description.ilike.%${filters.search}%`)
     }
 
-    const { data, error } = await query
+    const { data, error} = await query
 
     if (error) throw error
     return data as Mineral[]
@@ -105,63 +105,63 @@ export const mineralsService = {
 }
 
 // ===========================================
-// TAGS
+// CATEGORIES
 // ===========================================
 
-export const tagsService = {
-  // Get all tags
+export const categoriesService = {
+  // Get all categories
   async getAll() {
     const { data, error } = await supabase
-      .from('tags')
+      .from('categories')
       .select('*')
       .order('name')
 
     if (error) throw error
-    return data as Tag[]
+    return data as Category[]
   },
 
-  // Get tag by ID
+  // Get category by ID
   async getById(id: string) {
     const { data, error } = await supabase
-      .from('tags')
+      .from('categories')
       .select('*')
       .eq('id', id)
       .single()
 
     if (error) throw error
-    return data as Tag
+    return data as Category
   },
 
-  // Create new tag
-  async create(tagData: CreateTagData) {
+  // Create new category
+  async create(categoryData: CreateCategoryData) {
     const { data, error } = await supabase
-      .from('tags')
-      .insert(tagData)
+      .from('categories')
+      .insert(categoryData)
       .select()
       .single()
 
     if (error) throw error
-    return data as Tag
+    return data as Category
   },
 
-  // Update tag
-  async update(tagData: UpdateTagData) {
-    const { id, ...updateData } = tagData
+  // Update category
+  async update(categoryData: UpdateCategoryData) {
+    const { id, ...updateData } = categoryData
     const { data, error } = await supabase
-      .from('tags')
+      .from('categories')
       .update(updateData)
       .eq('id', id)
       .select()
       .single()
 
     if (error) throw error
-    return data as Tag
+    return data as Category
   },
 
-  // Delete tag
+  // Delete category
   async delete(id: string) {
     const { error } = await supabase
-      .from('tags')
+      .from('categories')
       .delete()
       .eq('id', id)
 
@@ -272,5 +272,116 @@ export const utilityService = {
     }
 
     return slug
+  }
+}
+
+// ===========================================
+// STAFF
+// ===========================================
+
+export const staffService = {
+  async getAll() {
+    const { data, error } = await supabase
+      .from('staff')
+      .select('*')
+      .order('updated_at', { ascending: false })
+    if (error) throw error
+    return data as Staff[]
+  },
+
+  async getById(id: string) {
+    const { data, error } = await supabase
+      .from('staff')
+      .select('*')
+      .eq('id', id)
+      .single()
+    if (error) throw error
+    return data as Staff
+  },
+
+  async create(staffData: CreateStaffData) {
+    const { data, error } = await supabase
+      .from('staff')
+      .insert(staffData)
+      .select()
+      .single()
+    if (error) throw error
+    return data as Staff
+  },
+
+  async update(staffData: UpdateStaffData) {
+    const { id, ...updateData } = staffData
+    const { data, error } = await supabase
+      .from('staff')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data as Staff
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('staff')
+      .delete()
+      .eq('id', id)
+    if (error) throw error
+  }
+}
+
+// ===========================================
+// FAQ
+// ===========================================
+
+export const faqService = {
+  async getAll() {
+    const { data, error } = await supabase
+      .from('faq')
+      .select('*')
+      .order('display_order', { ascending: true })
+      .order('created_at', { ascending: true})
+    if (error) throw error
+    return data as FAQ[]
+  },
+
+  async getById(id: string) {
+    const { data, error } = await supabase
+      .from('faq')
+      .select('*')
+      .eq('id', id)
+      .single()
+    if (error) throw error
+    return data as FAQ
+  },
+
+  async create(faqData: CreateFAQData) {
+    const { data, error } = await supabase
+      .from('faq')
+      .insert(faqData)
+      .select()
+      .single()
+    if (error) throw error
+    return data as FAQ
+  },
+
+  async update(faqData: UpdateFAQData) {
+    const { id, ...updateData } = faqData
+    const { data, error } = await supabase
+      .from('faq')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data as FAQ
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('faq')
+      .delete()
+      .eq('id', id)
+    if (error) throw error
   }
 }

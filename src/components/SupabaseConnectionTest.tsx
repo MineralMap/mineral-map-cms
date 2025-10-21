@@ -13,11 +13,11 @@ export const SupabaseConnectionTest = () => {
     const testConnection = async () => {
       try {
         // Test basic connection
-        const { data, error } = await supabase.from('_supabase_migrations').select('*').limit(1);
-        
+        const { error } = await supabase.from('_supabase_migrations').select('*').limit(1);
+
         if (error) {
           // If migrations table doesn't exist, try a different approach
-          const { data: authData, error: authError } = await supabase.auth.getSession();
+          const { error: authError } = await supabase.auth.getSession();
           
           if (authError) {
             throw new Error(`Connection failed: ${authError.message}`);
