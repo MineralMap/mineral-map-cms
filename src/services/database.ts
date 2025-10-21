@@ -210,8 +210,26 @@ export const storageService = {
     return { url: publicUrl, path: filePath }
   },
 
+  // Upload staff image to staff-images bucket
+  async uploadStaffImage(file: File, path?: string): Promise<{ url: string; path: string }> {
+    const fileName = path || `${Date.now()}-${file.name}`
+    const filePath = `staff/${fileName}`
+
+    const { error } = await supabase.storage
+      .from('staff-images')
+      .upload(filePath, file)
+
+    if (error) throw error
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('staff-images')
+      .getPublicUrl(filePath)
+
+    return { url: publicUrl, path: filePath }
+  },
+
   // Delete file from storage
-  async deleteFile(bucket: 'mineral-images' | 'mineral-videos', path: string) {
+  async deleteFile(bucket: 'mineral-images' | 'mineral-videos' | 'staff-images', path: string) {
     const { error } = await supabase.storage
       .from(bucket)
       .remove([path])
@@ -220,7 +238,7 @@ export const storageService = {
   },
 
   // Get public URL for file
-  getPublicUrl(bucket: 'mineral-images' | 'mineral-videos', path: string) {
+  getPublicUrl(bucket: 'mineral-images' | 'mineral-videos' | 'staff-images', path: string) {
     const { data } = supabase.storage
       .from(bucket)
       .getPublicUrl(path)

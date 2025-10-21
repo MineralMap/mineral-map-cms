@@ -66,7 +66,7 @@ export function StaffForm() {
   const handleImageUpload = async (files: File[]) => {
     try {
       const file = files[0]
-      const { url } = await storageService.uploadImage(file)
+      const { url } = await storageService.uploadStaffImage(file)
       setImageUrl(url)
       toast.success('Image uploaded')
     } catch (error) {
