@@ -101,6 +101,52 @@ export const mineralsService = {
 
     if (error) throw error
     return data as Mineral[]
+  },
+
+  // Get count of featured minerals
+  async getFeaturedCount() {
+    const { count, error } = await supabase
+      .from('minerals')
+      .select('*', { count: 'exact', head: true })
+      .eq('featured', true)
+
+    if (error) throw error
+    return count || 0
+  },
+
+  // Toggle featured status
+  async toggleFeatured(id: string, featured: boolean) {
+    // If trying to feature, check if we already have 3
+    if (featured) {
+      // First check: Get the mineral to verify it's published
+      const { data: mineral, error: fetchError } = await supabase
+        .from('minerals')
+        .select('status')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+      
+      if (mineral.status !== 'published') {
+        throw new Error('Only published minerals can be featured. Please publish the mineral first.')
+      }
+
+      // Second check: Count existing featured minerals
+      const count = await this.getFeaturedCount()
+      if (count >= 3) {
+        throw new Error('Cannot feature more than 3 minerals. Please unfeature another mineral first.')
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('minerals')
+      .update({ featured })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as Mineral
   }
 }
 

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, Star } from "lucide-react";
 import { mineralsService } from "@/services/database";
 import type { Mineral } from "@/types/database";
 import { useNavigate } from "react-router-dom";
@@ -65,6 +65,7 @@ const Minerals = () => {
         hardness: "—", // Not in base schema; placeholder to preserve layout
         status: (m.status.charAt(0).toUpperCase() + m.status.slice(1)) as DisplayStatus,
         lastModified: format(new Date(m.updated_at), "yyyy-MM-dd"),
+        featured: m.featured || false,
       }));
   }, [minerals, searchQuery]);
 
@@ -80,6 +81,24 @@ const Minerals = () => {
     }
   };
 
+  const handleToggleFeatured = async (id: string, currentFeatured: boolean) => {
+    try {
+      const updatedMineral = await mineralsService.toggleFeatured(id, !currentFeatured);
+      setMinerals((prev) =>
+        prev.map((m) => (m.id === id ? updatedMineral : m))
+      );
+      toast.success(
+        updatedMineral.featured
+          ? "Mineral featured successfully"
+          : "Mineral unfeatured successfully"
+      );
+    } catch (e) {
+      console.error(e);
+      const errorMessage = e instanceof Error ? e.message : "Failed to update featured status";
+      toast.error(errorMessage);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -88,6 +107,10 @@ const Minerals = () => {
           <p className="text-muted-foreground mt-2">
             Manage your mineral collection and data
           </p>
+          <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
+            <Star className="h-4 w-4" />
+            <span>Click the star to feature minerals (max 3, published only)</span>
+          </div>
         </div>
         <Button onClick={() => navigate("/minerals/new")} className="bg-primary hover:bg-primary-hover text-primary-foreground">
           <Plus className="h-4 w-4 mr-2" />
@@ -128,9 +151,33 @@ const Minerals = () => {
           <Card key={mineral.id} className="border-border hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">{mineral.name}</CardTitle>
-                  <CardDescription>{mineral.category}</CardDescription>
+                <div className="flex items-start gap-2 flex-1">
+                  <button
+                    onClick={() => handleToggleFeatured(mineral.id, mineral.featured)}
+                    className="mt-1 transition-all duration-200 hover:scale-110"
+                    title={
+                      mineral.status !== 'Published'
+                        ? "Only published minerals can be featured"
+                        : mineral.featured
+                        ? "Unfeature mineral"
+                        : "Feature mineral"
+                    }
+                    disabled={mineral.status !== 'Published'}
+                  >
+                    <Star
+                      className={`h-5 w-5 ${
+                        mineral.featured
+                          ? "fill-yellow-400 text-yellow-400"
+                          : mineral.status !== 'Published'
+                          ? "text-gray-200 cursor-not-allowed"
+                          : "text-gray-300 hover:text-yellow-400"
+                      }`}
+                    />
+                  </button>
+                  <div>
+                    <CardTitle className="text-lg">{mineral.name}</CardTitle>
+                    <CardDescription>{mineral.category}</CardDescription>
+                  </div>
                 </div>
                 <Badge className={getStatusColor(mineral.status)}>
                   {mineral.status}

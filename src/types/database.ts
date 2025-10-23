@@ -34,6 +34,7 @@ export interface Mineral {
   category: string | null // TEXT (single category name)
   images: MineralImage[] // JSONB DEFAULT '[]' (array of image metadata)
   status: MineralStatus // mineral_status DEFAULT 'draft'
+  featured: boolean // BOOLEAN DEFAULT false (max 3 can be featured)
   meta_title?: string // TEXT (SEO title)
   meta_description?: string // TEXT (SEO description)
   created_at: string // TIMESTAMP WITH TIME ZONE
@@ -74,6 +75,7 @@ export interface CreateMineralData {
   category: string | null // Single category name (not category ID)
   images?: MineralImage[]
   status: MineralStatus
+  featured?: boolean // Optional, defaults to false
   meta_title?: string
   meta_description?: string
 }
