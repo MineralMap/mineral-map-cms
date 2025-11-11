@@ -100,15 +100,21 @@ export function MineralForm() {
   const handleImageUpload = async (files: File[]) => {
     try {
       const uploadPromises = files.map(async (file) => {
-        const { url } = await storageService.uploadImage(file)
-        return {
-          id: crypto.randomUUID(),
-          url,
-          alt: '',
-          caption: '',
-          filename: file.name,
-          size: file.size,
-        } as MineralImage
+        try {
+          const { url } = await storageService.uploadImage(file)
+          return {
+            id: crypto.randomUUID(),
+            url,
+            alt: '',
+            caption: '',
+            filename: file.name,
+            size: file.size,
+          } as MineralImage
+        } catch (uploadError) {
+          console.error(`Failed to upload ${file.name}:`, uploadError)
+          toast.error(`Failed to upload ${file.name}: ${uploadError instanceof Error ? uploadError.message : 'Unknown error'}`)
+          throw uploadError
+        }
       })
 
       const newImages = await Promise.all(uploadPromises)
@@ -116,7 +122,7 @@ export function MineralForm() {
       toast.success(`Uploaded ${newImages.length} image(s)`)
     } catch (error) {
       console.error('Error uploading images:', error)
-      toast.error('Failed to upload images')
+      // Error already shown in individual file upload
     }
   }
 

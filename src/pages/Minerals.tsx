@@ -61,8 +61,6 @@ const Minerals = () => {
         id: m.id,
         name: m.title,
         category: m.category || "—",
-        color: "—", // Not in base schema; placeholder to preserve layout
-        hardness: "—", // Not in base schema; placeholder to preserve layout
         status: (m.status.charAt(0).toUpperCase() + m.status.slice(1)) as DisplayStatus,
         lastModified: format(new Date(m.updated_at), "yyyy-MM-dd"),
         featured: m.featured || false,
@@ -186,16 +184,6 @@ const Minerals = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Color:</span>
-                    <div className="font-medium">{mineral.color}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Hardness:</span>
-                    <div className="font-medium">{mineral.hardness}</div>
-                  </div>
-                </div>
                 <div className="text-xs text-muted-foreground">
                   Last modified: {mineral.lastModified}
                 </div>

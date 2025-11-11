@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Database, TrendingUp, FolderOpen } from "lucide-react";
-import { SupabaseConnectionTest } from "@/components/SupabaseConnectionTest";
 import { mineralsService, categoriesService } from "@/services/database";
 import type { Mineral } from "@/types/database";
 import { useNavigate } from "react-router-dom";
@@ -91,11 +90,6 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {/* Supabase Connection Test */}
-      <div className="flex justify-center">
-        <SupabaseConnectionTest />
       </div>
 
       {/* Recent Activity */}

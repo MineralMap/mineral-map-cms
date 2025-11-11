@@ -222,12 +222,15 @@ export const categoriesService = {
 export const storageService = {
   // Upload image to mineral-images bucket
   async uploadImage(file: File, path?: string): Promise<{ url: string; path: string }> {
-    const fileName = path || `${Date.now()}-${file.name}`
+    const fileName = path || `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
     const filePath = `images/${fileName}`
 
     const { error } = await supabase.storage
       .from('mineral-images')
-      .upload(filePath, file)
+      .upload(filePath, file, {
+        upsert: false,
+        cacheControl: '3600'
+      })
 
     if (error) throw error
 
@@ -240,12 +243,15 @@ export const storageService = {
 
   // Upload video to mineral-videos bucket
   async uploadVideo(file: File, path?: string): Promise<{ url: string; path: string }> {
-    const fileName = path || `${Date.now()}-${file.name}`
+    const fileName = path || `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
     const filePath = `videos/${fileName}`
 
     const { error } = await supabase.storage
       .from('mineral-videos')
-      .upload(filePath, file)
+      .upload(filePath, file, {
+        upsert: false,
+        cacheControl: '3600'
+      })
 
     if (error) throw error
 
@@ -258,12 +264,15 @@ export const storageService = {
 
   // Upload staff image to staff-images bucket
   async uploadStaffImage(file: File, path?: string): Promise<{ url: string; path: string }> {
-    const fileName = path || `${Date.now()}-${file.name}`
+    const fileName = path || `${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
     const filePath = `staff/${fileName}`
 
     const { error } = await supabase.storage
       .from('staff-images')
-      .upload(filePath, file)
+      .upload(filePath, file, {
+        upsert: false,
+        cacheControl: '3600'
+      })
 
     if (error) throw error
 
